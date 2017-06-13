@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   preinitialize="windowedapplication1_preinitializeHandler(event)"
+					   initialize="windowedapplication1_initializeHandler(event)">
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import dbmod.DBController;
+			import dbmod.DBEvent;
+			import dbmod.DBModel;
+			
+			import mx.events.FlexEvent;
+			private var dbModel:DBModel = DBModel.getInstance() ;
+			private  var DBFILE_NAME :String  = "db_post_scheduler_v1.db" ; 
+			
+			protected function windowedapplication1_preinitializeHandler(event:FlexEvent):void
+			{
+				if(dbModel.copyDBToLSByPath(DBFILE_NAME))
+					trace("DB File Copied Successfully.") ;
+				else 
+					trace("DB File Copied Failed.") ;
+			}
+			
+			protected function windowedapplication1_initializeHandler(event:FlexEvent):void
+			{
+				this.dbModel.dbController = new DBController(this);
+				/*****************************
+				 Open Database connection 
+				 *****************************/
+				this.dbModel.dbController.openDBConnection();
+				this.dbModel.dbController.addEventListener(DBEvent.DB_CONN_SUCCESSFUL,dbConnectSuccess);
+				this.dbModel.dbController.addEventListener(DBEvent.DB_CONN_FAIL,dbConnectFailed);
+			}
+			
+			protected function dbConnectSuccess(event:DBEvent):void
+			{
+				(event.currentTarget as DBController).removeEventListener(DBEvent.DB_CONN_SUCCESSFUL,dbConnectSuccess);
+				trace("DB Connection Success.") ;
+				// Load Database table 
+			}
+			protected function dbConnectFailed(event:DBEvent):void
+			{
+				(event.currentTarget as DBController).removeEventListener(DBEvent.DB_CONN_FAIL,dbConnectSuccess);
+				
+				// Load Database table 
+				trace("DB Connection Failed.") ;
+			}
+			
+		]]>
+	</fx:Script>
+</s:WindowedApplication>
